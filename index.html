@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Matrimonio Chiara e Carlo</title>
   <style>
     body {
@@ -22,6 +21,15 @@
       font-size: 24px;
       font-weight: bold;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    /* Nuovo stile per la frase sotto il titolo */
+    #slogan {
+      margin-top: 10px;
+      font-size: 16px;
+      font-style: italic;
+      color: #555;
+      max-width: 900px;
     }
     #gallery {
       display: grid;
@@ -57,43 +65,51 @@
   </style>
 </head>
 <body>
-  <header>Matrimonio Chiara e Carlo - 30 agosto 2025</header>
+  <header>
+    <div>Matrimonio Chiara e Carlo - 30 agosto 2025</div>
+    <!-- Inseriamo la frase -->
+    <div id="slogan">
+      Se le vostre piantine sono nate, pubblicate qui una foto in loro compagnia, speriamo tra qualche settimana di vedere un bel bosco!
+    </div>
+  </header>
   <main id="gallery"></main>
   <div id="upload-section">
     <label class="upload-btn" for="fileInput">📷 Carica una foto</label>
-    <input type="file" id="fileInput" accept="image/*">
+    <input type="file" id="fileInput" accept="image/*" />
   </div>
 
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
     const gallery = document.getElementById('gallery');
     const fileInput = document.getElementById('fileInput');
 
-    // Carica foto salvate (localStorage)
-    const savedImages = JSON.parse(localStorage.getItem('photos')) || [];
-    savedImages.forEach(src => {
-      addImageToGallery(src);
-    });
+    async function loadImages() {
+      const listRef = ref(storage, 'uploads/');
+      const res = await listAll(listRef);
+      res.items.reverse().forEach(async (itemRef) => {
+        const url = await getDownloadURL(itemRef);
+        addImageToGallery(url);
+      });
+    }
 
-    fileInput.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file && file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataURL = reader.result;
-          addImageToGallery(dataURL);
-          savedImages.push(dataURL);
-          localStorage.setItem('photos', JSON.stringify(savedImages));
-        }
-        reader.readAsDataURL(file);
-      }
-    });
-
-    function addImageToGallery(src) {
-      const img = document.createElement('img');
-      img.src = src;
-      img.className = 'photo';
-      gallery.prepend(img);
-    }
-  </script>
-</body>
-</html>
+        const fileRef = ref(storage, 'uploads/' + Date.now() + '_' + file.name);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(file
