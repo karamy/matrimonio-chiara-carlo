@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matrimonio Chiara e Carlo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fdf6f0;
+    }
+    header {
+      background-color: #fff0e6;
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+    .photo {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      object-fit: cover;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    #upload-section {
+      position: fixed;
+      bottom: 20px;
+      background-color: #ffe5d0;
+      padding: 10px 20px;
+      border-radius: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    input[type="file"] {
+      display: none;
+    }
+    label.upload-btn {
+      cursor: pointer;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <header>Matrimonio Chiara e Carlo - 30 agosto 2025</header>
+  <main id="gallery"></main>
+  <div id="upload-section">
+    <label class="upload-btn" for="fileInput">📷 Carica una foto</label>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <script>
+    const gallery = document.getElementById('gallery');
+    const fileInput = document.getElementById('fileInput');
+
+    // Carica foto salvate (localStorage)
+    const savedImages = JSON.parse(localStorage.getItem('photos')) || [];
+    savedImages.forEach(src => {
+      addImageToGallery(src);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataURL = reader.result;
+          addImageToGallery(dataURL);
+          savedImages.push(dataURL);
+          localStorage.setItem('photos', JSON.stringify(savedImages));
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function addImageToGallery(src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.className = 'photo';
+      gallery.prepend(img);
+    }
+  </script>
+</body>
+</html>
